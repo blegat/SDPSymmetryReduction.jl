@@ -7,6 +7,17 @@
         Q_hat = SDPSymmetryReduction.diagonalize(Float64, P)
         @test sort(size.(Q_hat, 2)) == [2, 2, 3]
 
+        blkd = blockDiagonalize(P, false)
+        @test blkd.blkSizes == size.(blkd.bases, 2)
+        Q = reduce(hcat, blkd.bases)
+        @test Q' * Q ≈ I
+        for i in 1:dim(P)
+            Pi = P.matrix .== i
+            for (B, Qk) in zip(blkd.blks[i], blkd.bases)
+                @test Qk' * Pi * Qk ≈ B atol = 1e-12
+            end
+        end
+
         model = opt_model(P, Q_hat, CAb)
         JuMP.set_optimizer(model, CSDP.Optimizer)
         JuMP.set_silent(model)

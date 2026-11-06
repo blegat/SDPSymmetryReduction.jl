@@ -42,6 +42,7 @@ Determines a block-diagonalization of a (Jordan)-algebra given by a partition `P
 
 * `blkd.blkSizes` is an integer array of the sizes of the blocks.
 * `blkd.blks` is an array of length `dim(P)` containing arrays of (real/complex) matrices of sizes `blkd.blkSizes`. I.e. `blkd.blks[i]` is the image of the basis element `P.matrix .== i`.
+* `blkd.bases` is an array of matrices with orthonormal columns such that `blkd.blks[i][k] ≈ blkd.bases[k]' * (P.matrix .== i) * blkd.bases[k]`. The columns of different matrices are also orthogonal to each other. As each block may appear several times in the block-diagonalization of the algebra, only one copy of it is represented in `blkd.bases[k]`. A matrix `X = sum(x[i] * (P.matrix .== i) for i in 1:dim(P))` is therefore determined by its blocks `blkd.bases[k]' * X * blkd.bases[k]` but `X` is in general not equal to `sum(Q * Q' * X * Q * Q' for Q in blkd.bases)`.
 """
 function blockDiagonalize(
     ::Type{T},
@@ -64,7 +65,7 @@ function blockDiagonalize(
 
     verbose && @info sprint(timed_print, t)
 
-    return (blkSizes=[size(q, 2) for q in Q_hat], blks=basis_img)
+    return (blkSizes=[size(q, 2) for q in Q_hat], blks=basis_img, bases=Q_hat)
 end
 
 unSymmetrize(P) = desymmetrize(P)
